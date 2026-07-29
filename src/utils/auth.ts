@@ -65,6 +65,22 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: unknown) {
     const errMessage = error instanceof Error ? error.message : String(error);
+    const errCode = (error as { code?: string })?.code || '';
+
+    if (
+      errCode === 'auth/unauthorized-domain' ||
+      errMessage.includes('auth/unauthorized-domain') ||
+      errMessage.includes('domain tidak sah') ||
+      errMessage.includes('unauthorized domain')
+    ) {
+      const currentDomain = typeof window !== 'undefined' ? window.location.hostname : 'domain Anda';
+      logger.error('Gagal login Google Auth: Domain belum diizinkan di Firebase Console Authorized Domains', {
+        error: errMessage,
+        currentDomain,
+      });
+      throw new Error(`UNAUTHORIZED_DOMAIN:${currentDomain}`);
+    }
+
     logger.error('Gagal login Google Auth', { error: errMessage });
     throw error;
   } finally {

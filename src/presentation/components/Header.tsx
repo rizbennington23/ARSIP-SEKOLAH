@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { User } from 'firebase/auth';
 import {
   Archive,
@@ -14,6 +14,7 @@ import {
   User as UserIcon,
 } from 'lucide-react';
 import { googleSignIn, googleSignOut } from '../../utils/auth';
+import { UnauthorizedDomainModal } from './UnauthorizedDomainModal';
 
 interface HeaderProps {
   user: User | null;
@@ -30,14 +31,22 @@ export const Header: React.FC<HeaderProps> = ({
   isSyncing,
   onTriggerSync,
 }) => {
+  const [unauthorizedDomain, setUnauthorizedDomain] = useState<string | null>(null);
+
   const handleLogin = async () => {
     try {
       const res = await googleSignIn();
       if (res) {
         onAuthChange(res.user, res.accessToken);
       }
-    } catch (err) {
-      console.error('Login error', err);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.startsWith('UNAUTHORIZED_DOMAIN:')) {
+        const domain = msg.split('UNAUTHORIZED_DOMAIN:')[1] || window.location.hostname;
+        setUnauthorizedDomain(domain);
+      } else {
+        alert(`Gagal login Google Auth: ${msg}`);
+      }
     }
   };
 
@@ -153,6 +162,12 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
       </div>
+
+      <UnauthorizedDomainModal
+        isOpen={!!unauthorizedDomain}
+        domainName={unauthorizedDomain || ''}
+        onClose={() => setUnauthorizedDomain(null)}
+      />
     </header>
   );
 };
