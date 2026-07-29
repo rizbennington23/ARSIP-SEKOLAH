@@ -16,10 +16,11 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { GoogleDriveFolderConfig, SyncLog } from '../../types';
+import { AppUser } from '../../utils/auth';
 import { formatDateTimeIndonesian } from '../../utils/date';
 
 interface DriveSyncViewProps {
-  user: User | null;
+  user: User | AppUser | null;
   accessToken: string | null;
   driveConfig: GoogleDriveFolderConfig;
   syncLogs: SyncLog[];

@@ -14,14 +14,14 @@ import {
   Info,
   ShieldCheck,
 } from 'lucide-react';
-import { googleSignIn } from '../../utils/auth';
+import { AppUser, googleSignIn } from '../../utils/auth';
 import { UnauthorizedDomainModal } from './UnauthorizedDomainModal';
 
 interface GoogleAuthBannerProps {
-  user: User | null;
+  user: User | AppUser | null;
   folderId?: string;
   spreadsheetId?: string;
-  onAuthSuccess: (user: User, token: string) => void;
+  onAuthSuccess: (user: User | AppUser, token: string) => void;
 }
 
 export const GoogleAuthBanner: React.FC<GoogleAuthBannerProps> = ({

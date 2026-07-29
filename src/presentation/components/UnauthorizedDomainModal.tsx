@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { AlertTriangle, Check, Copy, ExternalLink, ShieldAlert, X } from 'lucide-react';
+import { AlertTriangle, Check, Copy, ExternalLink, ShieldAlert, UserCheck, X } from 'lucide-react';
 import firebaseConfig from '../../../firebase-applet-config.json';
 
 interface UnauthorizedDomainModalProps {
@@ -116,18 +116,19 @@ export const UnauthorizedDomainModal: React.FC<UnauthorizedDomainModalProps> = (
         <div className="flex flex-col sm:flex-row items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md transition-all cursor-pointer"
           >
-            Tutup
+            <UserCheck className="w-4 h-4" />
+            <span>Masuk Otomatis (Mode Operator)</span>
           </button>
           <a
             href={consoleSettingsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md transition-all"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl shadow-xs transition-all"
           >
             <span>Buka Firebase Console</span>
-            <ExternalLink className="w-4 h-4" />
+            <ExternalLink className="w-3.5 h-3.5" />
           </a>
         </div>
       </div>

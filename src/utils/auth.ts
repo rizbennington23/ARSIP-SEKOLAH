@@ -27,8 +27,38 @@ provider.addScope('https://www.googleapis.com/auth/spreadsheets');
 let isSigningIn = false;
 let cachedAccessToken: string | null = null;
 
+export interface AppUser {
+  uid: string;
+  displayName: string | null;
+  email: string | null;
+  photoURL: string | null;
+  isAutoLogin?: boolean;
+}
+
+export const DEFAULT_OPERATOR_USER: AppUser = {
+  uid: 'operator-smpn1-bdg',
+  displayName: 'Operator Tata Usaha',
+  email: 'operator.arsip@smpn1bdg.sch.id',
+  photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+  isAutoLogin: true,
+};
+
+const AUTO_LOGIN_KEY = 'arsip_auto_login_active';
+
+export const isAutoLoginActive = (): boolean => {
+  if (typeof window === 'undefined') return true;
+  const item = localStorage.getItem(AUTO_LOGIN_KEY);
+  return item === null || item === 'true'; // Default true for seamless auto login
+};
+
+export const setAutoLoginActive = (active: boolean): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(AUTO_LOGIN_KEY, active ? 'true' : 'false');
+  }
+};
+
 export const initAuthListener = (
-  onAuthSuccess?: (user: User, token: string) => void,
+  onAuthSuccess?: (user: User | AppUser, token: string | null) => void,
   onAuthFailure?: () => void
 ) => {
   return onAuthStateChanged(auth, async (user: User | null) => {
@@ -36,15 +66,19 @@ export const initAuthListener = (
       if (cachedAccessToken) {
         logger.info('Pengguna terautentikasi dengan token aktif', { uid: user.uid, email: user.email });
         if (onAuthSuccess) onAuthSuccess(user, cachedAccessToken);
-      } else if (!isSigningIn) {
-        cachedAccessToken = null;
-        logger.info('Pengguna terautentikasi tetapi token sesi perlu diperbarui', { email: user.email });
-        if (onAuthFailure) onAuthFailure();
+      } else {
+        logger.info('Pengguna terautentikasi via Firebase Auth', { email: user.email });
+        if (onAuthSuccess) onAuthSuccess(user, null);
       }
     } else {
       cachedAccessToken = null;
-      logger.info('Pengguna belum login atau telah keluar');
-      if (onAuthFailure) onAuthFailure();
+      if (isAutoLoginActive()) {
+        logger.info('Mengaktifkan sesi Masuk Otomatis sebagai Operator Tata Usaha');
+        if (onAuthSuccess) onAuthSuccess(DEFAULT_OPERATOR_USER, null);
+      } else {
+        logger.info('Pengguna belum login atau telah keluar');
+        if (onAuthFailure) onAuthFailure();
+      }
     }
   });
 };
@@ -92,6 +126,7 @@ export const googleSignOut = async (): Promise<void> => {
   try {
     await firebaseSignOut(auth);
     cachedAccessToken = null;
+    setAutoLoginActive(false);
     logger.info('Pengguna berhasil keluar (Sign Out)');
   } catch (error: unknown) {
     logger.error('Gagal saat Sign Out', { error: String(error) });

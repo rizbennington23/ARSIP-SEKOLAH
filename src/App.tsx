@@ -16,7 +16,14 @@ import {
   SuratMasuk,
   SyncLog,
 } from './types';
-import { getAccessToken, initAuthListener, setAccessToken } from './utils/auth';
+import {
+  AppUser,
+  DEFAULT_OPERATOR_USER,
+  getAccessToken,
+  initAuthListener,
+  setAccessToken,
+  setAutoLoginActive,
+} from './utils/auth';
 import { logger } from './utils/logger';
 
 // Presentation
@@ -32,7 +39,7 @@ import { SuratKeluarView } from './presentation/views/SuratKeluarView';
 import { SuratMasukView } from './presentation/views/SuratMasukView';
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | AppUser | null>(DEFAULT_OPERATOR_USER);
   const [accessToken, setAccessTokenState] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
 
@@ -82,10 +89,14 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  const handleAuthChange = (newUser: User | null, newToken: string | null) => {
+  const handleAuthChange = (newUser: User | AppUser | null, newToken: string | null) => {
     setUser(newUser);
     setAccessTokenState(newToken);
     setAccessToken(newToken);
+
+    if (newUser) {
+      setAutoLoginActive(true);
+    }
 
     if (newToken) {
       // Auto Sync upon initial login
