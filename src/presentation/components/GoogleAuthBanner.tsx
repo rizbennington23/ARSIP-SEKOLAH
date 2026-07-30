@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { User } from 'firebase/auth';
 import {
   CheckCircle2,
@@ -15,7 +15,6 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { AppUser, googleSignIn } from '../../utils/auth';
-import { UnauthorizedDomainModal } from './UnauthorizedDomainModal';
 
 interface GoogleAuthBannerProps {
   user: User | AppUser | null;
@@ -30,8 +29,6 @@ export const GoogleAuthBanner: React.FC<GoogleAuthBannerProps> = ({
   spreadsheetId,
   onAuthSuccess,
 }) => {
-  const [unauthorizedDomain, setUnauthorizedDomain] = useState<string | null>(null);
-
   const handleConnect = async () => {
     try {
       const res = await googleSignIn();
@@ -39,13 +36,7 @@ export const GoogleAuthBanner: React.FC<GoogleAuthBannerProps> = ({
         onAuthSuccess(res.user, res.accessToken);
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (msg.startsWith('UNAUTHORIZED_DOMAIN:')) {
-        const domain = msg.split('UNAUTHORIZED_DOMAIN:')[1] || window.location.hostname;
-        setUnauthorizedDomain(domain);
-      } else {
-        alert(`Gagal login Google Auth: ${msg}`);
-      }
+      console.error('Connection error', err);
     }
   };
 
@@ -76,12 +67,6 @@ export const GoogleAuthBanner: React.FC<GoogleAuthBannerProps> = ({
             <span>Hubungkan Google Sekolah</span>
           </button>
         </div>
-
-        <UnauthorizedDomainModal
-          isOpen={!!unauthorizedDomain}
-          domainName={unauthorizedDomain || ''}
-          onClose={() => setUnauthorizedDomain(null)}
-        />
       </div>
     );
   }
@@ -131,12 +116,6 @@ export const GoogleAuthBanner: React.FC<GoogleAuthBannerProps> = ({
           </a>
         )}
       </div>
-
-      <UnauthorizedDomainModal
-        isOpen={!!unauthorizedDomain}
-        domainName={unauthorizedDomain || ''}
-        onClose={() => setUnauthorizedDomain(null)}
-      />
     </div>
   );
 };

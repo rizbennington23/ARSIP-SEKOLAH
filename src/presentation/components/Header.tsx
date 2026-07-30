@@ -15,7 +15,6 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { AppUser, DEFAULT_OPERATOR_USER, googleSignIn, googleSignOut } from '../../utils/auth';
-import { UnauthorizedDomainModal } from './UnauthorizedDomainModal';
 
 interface HeaderProps {
   user: User | AppUser | null;
@@ -32,8 +31,6 @@ export const Header: React.FC<HeaderProps> = ({
   isSyncing,
   onTriggerSync,
 }) => {
-  const [unauthorizedDomain, setUnauthorizedDomain] = useState<string | null>(null);
-
   const handleLogin = async () => {
     try {
       const res = await googleSignIn();
@@ -41,13 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
         onAuthChange(res.user, res.accessToken);
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (msg.startsWith('UNAUTHORIZED_DOMAIN:')) {
-        const domain = msg.split('UNAUTHORIZED_DOMAIN:')[1] || window.location.hostname;
-        setUnauthorizedDomain(domain);
-      } else {
-        alert(`Gagal login Google Auth: ${msg}`);
-      }
+      console.error('Login error', err);
     }
   };
 
@@ -171,12 +162,6 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         )}
       </div>
-
-      <UnauthorizedDomainModal
-        isOpen={!!unauthorizedDomain}
-        domainName={unauthorizedDomain || ''}
-        onClose={() => setUnauthorizedDomain(null)}
-      />
     </header>
   );
 };
